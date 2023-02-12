@@ -1,23 +1,16 @@
 const express = require("express")
 const router = express.Router();
 const RegisterValidator = require("../../validator/registerValidator.js")
-const { body } = require('express-validator');
-
-const checkvalidator = [body('email','Format is incorrect').isEmail(), 
-                        body('name','Empty field').isLength({max: 1}),
-                        body('password','Password must be longer than 8 characters').isLength({min: 8}),
-                        body('confirm').custom((value,{req}) => {
-                           if(value !== req.body.password){
-                              throw new Error('dsdsssd');
-                           }
-                           return true;
-                        })];
+const { validationResult } = require('express-validator');
 
 router.get("/register",(req,res) => {
    res.render("register");
 })
-      .post("/register",checkvalidator,RegisterValidator,(req,res) => {
-         res.json({test: "OK"});
+      .post("/register",RegisterValidator,(req,res) => {
+         const errors = validationResult(req);
+         if(!errors.isEmpty()){
+             res.render("register",errors);
+         }
       });
 
 module.exports = router;
