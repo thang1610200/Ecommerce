@@ -2,8 +2,12 @@ const express = require("express");
 require("dotenv").config();
 const body_parser = require("body-parser");
 const router = require(__dirname + "/apps/routes");
+const mongoose = require('mongoose');
 
 const app = express();
+
+mongoose.set('strictQuery', false);
+mongoose.connect(process.env.DATABASE_URL);
 
 app.use("/static",express.static(__dirname + "/public"));
 
