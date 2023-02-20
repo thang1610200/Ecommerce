@@ -124,7 +124,8 @@
             <p class="text-gray-600 mb-6 text-sm">
                 welcome back customer
             </p>
-            <form action="/guest/login" method="post" autocomplete="off">
+            <div id="alert_error"></div>
+            <form method="" autocomplete="off">
                 <div class="space-y-2">
                     <div>
                         <label for="email" class="text-gray-600 mb-2 block">Email address</label>
@@ -148,7 +149,7 @@
                     <a href="#" class="text-primary">Forgot password</a>
                 </div>
                 <div class="mt-4">
-                    <button type="submit"
+                    <button id="btn_login" type="button"
                         class="block w-full py-2 text-center text-white bg-primary border border-primary rounded hover:bg-transparent hover:text-primary transition uppercase font-roboto font-medium">Login</button>
                 </div>
             </form>
@@ -254,7 +255,56 @@
         </div>
     </div>
     <!-- ./copyright -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script>
+    $(document).ready(function () {
+        $('#btn_login').click(function(){
+            var data_form = {
+                email: $("#email").val(),
+                password: $("#password").val()  
+                }
 
+            var alert = $('#alert_error');
+            $.ajax({
+                url: "/guest/login",
+                type: "POST",
+                data: data_form,
+                dataType: "json",
+                success: function(data){
+                    if(typeof data.errors != "undefined"){
+                        data.errors.errors.forEach(function(error){
+                            alert.append("<div class='text-white px-6 py-4 border-0 rounded relative mb-4 bg-pink-500'>"
+                                            +"<span class='text-xl inline-block mr-5 align-middle'>"
+                                              +  "<i class='fas fa-bell'></i>"
+                                            +"</span>"
+                                        +"<span class='inline-block align-middle mr-8'>"
+                                            + error.msg
+                                        +"</span>"
+                                    +"<button class='absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none' onclick='closeAlert(event)'>"
+                                            +"<span>×</span>"
+                                    +"</button>"
+                                    +"</div>")
+                            })
+                    }
+                    else{
+                        $.cookie("auth", data.token,{path: "/"});
+                        window.location.href = '/customer/shop';
+                    }
+                },
+                error: function(err){
+                }
+            })
+        })
+    })
+
+    function closeAlert(event){
+          let element = event.target;
+          while(element.nodeName !== "BUTTON"){
+            element = element.parentNode;
+          }
+          element.parentNode.parentNode.removeChild(element.parentNode);
+        }
+    </script>
 </body>
-
 </html>

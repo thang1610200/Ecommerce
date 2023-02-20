@@ -3,6 +3,7 @@ const router = express.Router();
 const RegisterValidator = require("../../validator/registerValidator.js")
 const { validationResult } = require('express-validator');
 const UserModel = require('../../models/User.js');
+const LoginValidator = require("../../validator/loginValidator.js");
 
 router.get("/register",(req,res) => {
    res.render("register");
@@ -23,12 +24,14 @@ router.get("/register",(req,res) => {
 router.get('/login',(req,res) => {
    res.render('login');
 })
-      .post('/login',async (req,res) => {
-            const User = await UserModel.findOne({email: req.body.email});
-            if(!User){
-               res.sendStatus(400);
+      .post('/login',LoginValidator, (req,res) => {
+            const errors = validationResult(req);
+            if(!errors.isEmpty()){
+               res.json({errors});
+            } 
+            else{
+               const token = req.token;
+               res.json({token});
             }
-            const token = User.GenerateToken();
-            res.redirect("/customer/shop");
       })
 module.exports = router;

@@ -30,7 +30,11 @@ UserSchema.pre('save',function() {
 })
 
 UserSchema.methods.GenerateToken = function(){
-    return jwt.sign({id: this._id, role: this.role},process.env.SECRET_TOKEN);
+    return jwt.sign({id: this._id, role: this.role},process.env.SECRET_TOKEN,{expiresIn: "30s"});
+}
+
+UserSchema.methods.ComparePass = function(plaintext){
+    return bcrypt.compareSync(plaintext, this.password);
 }
 
 module.exports = mongoose.model('User',UserSchema);
