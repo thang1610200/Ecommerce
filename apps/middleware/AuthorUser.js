@@ -1,13 +1,18 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const fs = require('fs');
 
 function verifyToken(req,res,next){
-    const token = req.cookies.auth;
+    const publickey = fs.readFileSync("./apps/key/publickey.crt");
+    const token = req.cookies.token;
     if(!token){
-        res.sendStatus(401);
+        return res.redirect("/guest/login");
     }
-    jwt.verify(token,process.env.SECRET_TOKEN,(err,data) => {
-        return next();
+    jwt.verify(token,publickey,{ algorithms: ['RS256'] },(err,data) => {
+        if(err){
+            return res.redirect("/guest/login");
+        }
+        next();
     });
 }
 

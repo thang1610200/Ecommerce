@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const fs = require('fs');
 
 const UserSchema = new mongoose.Schema({
     fullname: String,
@@ -22,15 +23,18 @@ const UserSchema = new mongoose.Schema({
 })
 
 UserSchema.pre('save',function() {
-    this.salt = this._id;
-    const salts = bcrypt.genSaltSync(Number(this._id));
-    this.password = bcrypt.hashSync(this.password,salts);
+    if(typeof this.password === undefined){
+        this.salt = this._id;
+        const salts = bcrypt.genSaltSync(Number(this._id));
+        this.password = bcrypt.hashSync(this.password,salts);
+    }
     this.createAt = new Date();
     this.updateAt = new Date();
 })
 
 UserSchema.methods.GenerateToken = function(){
-    return jwt.sign({id: this._id, role: this.role},process.env.SECRET_TOKEN,{expiresIn: "30s"});
+    const private_key = fs.readFileSync('./apps/key/private.pem');
+    return jwt.sign({id: this._id, role: this.role},private_key, { algorithm: 'RS256' });
 }
 
 UserSchema.methods.ComparePass = function(plaintext){
