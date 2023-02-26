@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const cookie_parser = require("cookie-parser");
 const session = require("express-session");
 const passport = require('passport');
+const flash = require('connect-flash');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(flash());
 app.use(router);
 
 const PORT = process.env.PORT || 3000;

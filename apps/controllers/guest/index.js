@@ -6,6 +6,7 @@ const UserModel = require('../../models/User.js');
 const LoginValidator = require("../../validator/loginValidator.js");
 const passport = require('passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 require('dotenv').config();
 
 passport.serializeUser(function(user, done) {   // B3: lưu vào session
@@ -46,8 +47,40 @@ router.get('/facebook/callback',                         // B5: trả về kết
       res.redirect('/customer/shop');
   });
 
+  passport.use(new GoogleStrategy({
+   clientID: process.env.GOOGLE_CLIENT_ID,
+   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+   callbackURL: "https://fbd2-2402-800-630f-6701-edda-6757-d303-8295.ap.ngrok.io/guest/google/callback"
+ },
+ function(accessToken, refreshToken, profile, cb) {
+   UserModel.findOne({email : profile.id},async function(err,user){
+      if(err){
+         return cb(err);
+      }
+
+      if(!user){
+         await UserModel.create({email: profile.id, fullname: profile.displayName});
+      }
+      return cb(null,user);
+   });
+ }
+));
+
+router.get('/google',
+  passport.authenticate('google', { scope: ['profile','email'] }));
+
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/guest/login' }),
+  async function(req, res) {
+    // Successful authentication, redirect home.
+    const User = await UserModel.findOne({email: req.user.email});
+    res.cookie("token",User.GenerateToken(),{path:"/",httpOnly: true, sameSite: "strict",maxAge:1000 * 3600 * 24})
+    res.redirect('/customer/shop');
+  });
+
+
 router.get("/register",(req,res) => {
-   res.render("register");
+   res.render("register",{message: req.flash('success')});
 })
       .post("/register",RegisterValidator, async (req,res) => {
          const errors = validationResult(req);
@@ -57,6 +90,7 @@ router.get("/register",(req,res) => {
          else{
             const {fullname, email, password} = req.body;
             const User = await UserModel.create({fullname, email, password});
+            req.flash('success','Successful account registration');
             res.redirect("/guest/login");
          }
       });
