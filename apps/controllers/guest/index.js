@@ -50,7 +50,7 @@ router.get('/facebook/callback',                         // B5: trả về kết
   passport.use(new GoogleStrategy({
    clientID: process.env.GOOGLE_CLIENT_ID,
    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-   callbackURL: "https://fbd2-2402-800-630f-6701-edda-6757-d303-8295.ap.ngrok.io/guest/google/callback"
+   callbackURL: "https://25ab-2402-800-630f-6701-f98d-702a-2bcf-dfa9.ap.ngrok.io/guest/google/callback"
  },
  function(accessToken, refreshToken, profile, cb) {
    UserModel.findOne({email : profile.id},async function(err,user){
@@ -74,13 +74,13 @@ router.get('/google/callback',
   async function(req, res) {
     // Successful authentication, redirect home.
     const User = await UserModel.findOne({email: req.user.email});
-    res.cookie("token",User.GenerateToken(),{path:"/",httpOnly: true, sameSite: "strict",maxAge:1000 * 3600 * 24})
+    res.cookie("token",User.GenerateToken(),{path:"/"});
     res.redirect('/customer/shop');
   });
 
 
 router.get("/register",(req,res) => {
-   res.render("register",{message: req.flash('success')});
+   res.render("register");
 })
       .post("/register",RegisterValidator, async (req,res) => {
          const errors = validationResult(req);
@@ -90,14 +90,15 @@ router.get("/register",(req,res) => {
          else{
             const {fullname, email, password} = req.body;
             const User = await UserModel.create({fullname, email, password});
-            req.flash('success','Successful account registration');
+            req.flash('register','Successful account registration');
             res.redirect("/guest/login");
          }
       });
 
 
 router.get('/login',(req,res) => {
-   res.render('login');
+   req.flash('login','Successful login');
+   res.render('login',{message: req.flash('register')});
 })
       .post('/login',LoginValidator, (req,res) => {
             const errors = validationResult(req);
@@ -109,4 +110,8 @@ router.get('/login',(req,res) => {
             }
       })
 
+router.get('/logout',(req,res) => {
+   res.clearCookie("token");
+   res.redirect("/");
+})
 module.exports = router;

@@ -108,11 +108,11 @@
             <div class="flex items-center justify-between flex-grow pl-12">
                 <div class="flex items-center space-x-6 capitalize">
                     <a href="/" class="text-gray-200 hover:text-white transition">Home</a>
-                    <a href="pages/shop.html" class="text-gray-200 hover:text-white transition">Shop</a>
+                    <a href="/customer/shop" class="text-gray-200 hover:text-white transition">Shop</a>
                     <a href="#" class="text-gray-200 hover:text-white transition">About us</a>
                     <a href="#" class="text-gray-200 hover:text-white transition">Contact us</a>
                 </div>
-                <a href="#" class="text-gray-200 hover:text-white transition">Login/Register</a>
+                <div id="author" class="text-gray-200 hover:text-white transition"><a href="/guest/login">Login</a><a href="/guest/register">/Register</a></div>
             </div>
         </div>
     </nav>
@@ -645,6 +645,16 @@
         </div>
     </div>
     <!-- ./copyright -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+   <script>
+        $(document).ready(function(){
+            if($.cookie("token")){
+                $("#author").empty();
+                $("#author").append("<a href='/guest/logout'>Logout</a>")
+            }
+        })
+    </script>
 </body>
 
 </html>

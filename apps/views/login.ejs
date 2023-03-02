@@ -107,11 +107,11 @@
             <div class="flex items-center justify-between flex-grow pl-12">
                 <div class="flex items-center space-x-6 capitalize">
                     <a href="/" class="text-gray-200 hover:text-white transition">Home</a>
-                    <a href="pages/shop.html" class="text-gray-200 hover:text-white transition">Shop</a>
+                    <a href="/customer/shop" class="text-gray-200 hover:text-white transition">Shop</a>
                     <a href="#" class="text-gray-200 hover:text-white transition">About us</a>
                     <a href="#" class="text-gray-200 hover:text-white transition">Contact us</a>
                 </div>
-                <a href="#" class="text-gray-200 hover:text-white transition">Login/Register</a>
+                <div class="text-gray-200 hover:text-white transition"><a href="/guest/login">Login</a><a href="/guest/register">/Register</a></div>
             </div>
         </div>
     </nav>
@@ -119,6 +119,11 @@
 
     <!-- login -->
     <div class="contain py-16">
+        <% if(message.length > 0){ %>
+        <div id="success" class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold"><%= message%></p>
+        </div>
+        <%}%>
         <div class="max-w-lg mx-auto shadow px-6 py-7 rounded overflow-hidden">
             <h2 class="text-2xl uppercase font-medium mb-1">Login</h2>
             <p class="text-gray-600 mb-6 text-sm">
@@ -287,7 +292,7 @@
                             })
                     }
                     else{
-                        $.cookie("token",data.accessToken,{path:"/",httpOnly: true, sameSite: "strict",maxAge:1000 * 3600 * 24})
+                        $.cookie("token",data.accessToken,{path:"/"})
                         window.location.href = "/customer/shop"
                     }
                 },
@@ -295,6 +300,10 @@
                 }
             })
         })
+
+        setTimeout(function(){
+            $("#success").remove();
+        },5000)
     })
 
     function closeAlert(event){

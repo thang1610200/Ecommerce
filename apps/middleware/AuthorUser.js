@@ -12,6 +12,7 @@ function verifyToken(req,res,next){
         if(err){
             return res.redirect("/guest/login");
         }
+        req.user = data;
         next();
     });
 }

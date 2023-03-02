@@ -1,10 +1,17 @@
 const { body } = require('express-validator');
 const User = require('../models/User.js');
+const EmailValid = require('deep-email-validator');
 
 const checkvalidator = [body('email','Format is incorrect').isEmail().custom(async (value,{req}) =>{
-                            const user = await User.findOne({email: value})
-                            if(user){
-                                throw new Error("Email already exists");
+                            const {valid} = await EmailValid.validate(value); // Kiểm tra Email có hoạt động hay không
+                            if(!valid){  // Nếu không hoạt động thì bắt lỗi
+                                throw new Error("Email isn't valid");
+                            }
+                            else{
+                                const user = await User.findOne({email: value})
+                                if(user){
+                                    throw new Error("Email already exists");
+                                }
                             }
                             return true;
                         }), 
