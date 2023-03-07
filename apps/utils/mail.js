@@ -11,7 +11,7 @@ const REFESH_TOKEN = config.REFESH_TOKEN;
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID,CLIENT_SECRET,REDIRECT_URL);
 oAuth2Client.setCredentials({refresh_token: REFESH_TOKEN});
 
-const sendMail = async (receiver,token) => {
+const sendMail = async (receiver,url) => {
     try{
         const accessToken = await oAuth2Client.getAccessToken();
         const transport = mail.createTransport({
@@ -29,7 +29,7 @@ const sendMail = async (receiver,token) => {
             }
         })
 
-        const data = await ejs.renderFile('./apps/views/verify.ejs',{data:`http://localhost:3001/customer/email/verify/${token}`});
+        const data = await ejs.renderFile('./apps/views/verify.ejs',{data:url});
 
         let infor = await transport.sendMail({
             from: '"Verify" <nguyenhuuthangc7@gmail.com>',

@@ -2,26 +2,30 @@ const { body } = require('express-validator');
 const User = require('../models/User.js');
 const EmailValid = require('deep-email-validator');
 
-const checkvalidator = [body('email','Format is incorrect').isEmail().custom(async (value,{req}) =>{
+const checkvalidator = [body('fullname','Empty field').notEmpty(),
+                        body('email','Format is incorrect').isEmail().custom(async (value,{req}) =>{
                             const {valid} = await EmailValid.validate(value); // Kiểm tra Email có hoạt động hay không
-                            if(!valid){  // Nếu không hoạt động thì bắt lỗi
-                                throw new Error("Email isn't valid");
-                            }
-                            else{
+                           if(!valid){  // Nếu không hoạt động thì bắt lỗi
+                               throw new Error("Email isn't valid");
+                           }
+                           else{
                                 const user = await User.findOne({email: value})
                                 if(user){
                                     throw new Error("Email already exists");
                                 }
+                                else{
+                                    return true;
+                                }
                             }
-                            return true;
                         }), 
-                        body('name','Empty field').isLength({max: 1}),
                         body('password','Password must be longer than 8 characters').isLength({min: 8}),
                         body('confirm').custom((value,{req}) => {
                         if(value !== req.body.password){
                             throw new Error("Password confirmation doesn't match password");
                         }
-                        return true;
+                        else{
+                            return true;
+                        }
                         })];
 
 

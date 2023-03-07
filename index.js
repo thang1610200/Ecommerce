@@ -7,8 +7,11 @@ const cookie_parser = require("cookie-parser");
 const session = require("express-session");
 const passport = require('passport');
 const flash = require('connect-flash');
+const compression = require('compression');
 
 const app = express();
+
+app.use(compression());  // tối ưu băng thông, tăng tốc độ chạy
 
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.DATABASE_URL);
@@ -26,7 +29,7 @@ app.use(cookie_parser());
 app.use(session({
     secret: process.env.SECRET_KEY,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { secure: false}
 }))
 

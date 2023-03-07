@@ -111,7 +111,7 @@
                     <a href="#" class="text-gray-200 hover:text-white transition">About us</a>
                     <a href="#" class="text-gray-200 hover:text-white transition">Contact us</a>
                 </div>
-                <div class="text-gray-200 hover:text-white transition"><a href="/guest/login">Login</a><a href="/guest/register">/Register</a></div>
+                <div class="text-gray-200 hover:text-white transition"><a href="/guest/logout">Logout</a></div>
             </div>
         </div>
     </nav>
@@ -136,7 +136,7 @@
         <div class="col-span-3">
             <div class="px-4 py-3 shadow flex items-center gap-4">
                 <div class="flex-shrink-0">
-                    <img src="/static/images/avatar.png" alt="profile"
+                    <img src="<%= data.avatar%>" alt="profile"
                         class="rounded-full w-14 h-14 border border-gray-200 p-1 object-cover">
                 </div>
                 <div class="flex-grow">
@@ -221,11 +221,43 @@
             <h4 class="text-lg font-medium capitalize mb-4">
                 Profile information
             </h4>
+            <form method="post" action="/customer/profile" enctype="multipart/form-data">
             <div class="space-y-4">
+                <div x-data="{photoName: null, photoPreview: null}" class="col-span-6 ml-2 sm:col-span-4 md:mr-3">
+                    <!-- Photo File Input -->
+                    <input name="photo" id="photo" type="file" class="hidden" x-ref="photo" x-on:change="
+                                        photoName = $refs.photo.files[0].name;
+                                        const reader = new FileReader();
+                                        reader.onload = (e) => {
+                                            photoPreview = e.target.result;
+                                        };
+                                        reader.readAsDataURL($refs.photo.files[0]);
+                    ">
+                
+                    <label class="block text-gray-700 text-sm font-bold mb-2 text-center" for="photo">
+                        Profile Photo <span class="text-red-600"> </span>
+                    </label>
+                    
+                    <div class="text-center">
+                        <!-- Current Profile Photo -->
+                        <div class="mt-2" x-show="! photoPreview">
+                            <img src="<%= data.avatar%>" class="w-40 h-40 m-auto rounded-full shadow">
+                        </div>
+                        <!-- New Profile Photo Preview -->
+                        <div class="mt-2" x-show="photoPreview" style="display: none;">
+                            <span class="block w-40 h-40 rounded-full m-auto shadow" x-bind:style="'background-size: cover; background-repeat: no-repeat; background-position: center center; background-image: url(\'' + photoPreview + '\');'" style="background-size: cover; background-repeat: no-repeat; background-position: center center; background-image: url('null');">
+                            </span>
+                        </div>
+                        <button type="button" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-400 focus:shadow-outline-blue active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150 mt-2 ml-3" x-on:click.prevent="$refs.photo.click()">
+                            Select New Photo
+                        </button>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="first">First name</label>
-                        <input type="text" name="first" id="first" class="input-box">
+                        <input type="text" name="first" id="first" class="input-box" value="<%= data.fullname%>">
                     </div>
                     <div>
                         <label for="last">Last name</label>
@@ -249,7 +281,7 @@
                     <div>
                         <label>Email Address</label>
                         <div class="mt-3"><%= data.email%>
-                            <% if(typeof data.email === undefined){ %>
+                            <% if(typeof data.email_active === "undefined"){ %>
                             <button id="sendMail" class="ml-3 underline underline-offset-2 text-blue-500" type="button">Verify</button>
                             <%} else{%>
                                 <span class="text-green-500"><i class="fa-solid fa-circle-check"></i>Verified</span>
@@ -268,6 +300,7 @@
                     class="py-3 px-4 text-center text-white bg-primary border border-primary rounded-md hover:bg-transparent hover:text-primary transition font-medium">save
                     changes</button>
             </div>
+        </form>
         </div>
         <!-- ./info -->
 
@@ -355,6 +388,8 @@
         </div>
     </div>
     <!-- ./copyright -->
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.0/dist/alpine.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@0.3.x/dist/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         $(document).ready(function(){
