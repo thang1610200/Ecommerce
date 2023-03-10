@@ -14,7 +14,21 @@ const drive = google.drive({
     version: 'v3',
     auth: oAuth2Client
 })
-module.exports = {
+var that = module.exports = {
+    setPublic: async(id) => {
+        try{
+            await drive.permissions.create({
+                fileId: id,
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone'
+                }
+        })
+    }
+    catch(err){
+        console.error(err);
+    }
+    },
     uploadFile: async(fileObject) => {
         try{
         const bufferStream = new stream.PassThrough();
@@ -28,8 +42,9 @@ module.exports = {
                     name: fileObject.originalname,
                     parents: ['1m3KuXgVzSiuuVnGx4Xp7FtUV8vHObeXt']
                 },
-                fields: 'id,name,thumbnailLink',
+                fields: 'id,name',
             })
+            await that.setPublic(data.id);
             return data;
         }
         catch(err){

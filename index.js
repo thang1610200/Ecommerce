@@ -11,7 +11,7 @@ const compression = require('compression');
 
 const app = express();
 
-app.use(compression());  // tối ưu băng thông, tăng tốc độ chạy
+app.use(compression({level: 6}));  // tối ưu băng thông, tăng tốc độ chạy
 
 mongoose.set('strictQuery', false);
 mongoose.connect(process.env.DATABASE_URL);
@@ -32,11 +32,11 @@ app.use(session({
     saveUninitialized: false,
     cookie: { secure: false}
 }))
+app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(flash());
 app.use(router);
 
 const PORT = process.env.PORT || 3000;

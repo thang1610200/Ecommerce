@@ -1,5 +1,4 @@
 const express = require("express")
-const router = express.Router();
 const RegisterValidator = require("../../validator/registerValidator.js")
 const { validationResult } = require('express-validator');
 const UserModel = require('../../models/User.js');
@@ -13,6 +12,7 @@ const bcrypt = require('bcryptjs');
 const ResetPassValidator = require("../../validator/resetpassValidator.js");
 require('dotenv').config();
 
+const router = express.Router();
 passport.serializeUser(function(user, done) {   // B3: lưu vào session
    done(null, user);
  });
@@ -88,15 +88,15 @@ router.get("/register",(req,res) => {
    res.render("register");
 })
       .post("/register",RegisterValidator, async (req,res) => {
-         const errors = validationResult(req);
+        const errors = validationResult(req);
          if(!errors.isEmpty()){
-             res.render("register",errors);
+            res.render("register",errors);
          }
          else{
             const {fullname, email, password} = req.body;
-            const User = await UserModel.create({fullname, email, password});
+            await UserModel.create({fullname, email, password});
             req.flash('register','Successful account registration');
-            res.redirect("/guest/login");
+            res.redirect('/guest/login');
          }
       });
 
@@ -152,7 +152,7 @@ router.get('/password/mail/reset/:token',async (req,res) => {
       }
       else{
          const {email,password} = req.body;
-         const salt = Math.floor(Math.random() * 101);
+         const salt = Math.floor(Math.random() * 11);
          await UserModel.updateOne({email},{password: bcrypt.hashSync(password,salt),salt,updateAt: new Date()});    //findOneandUpdate sẽ trả về 1 tài liệu {thêm new: true} còn updateOne thì không
          await ResetPassModel.deleteOne({email});
          res.redirect("/guest/login");
