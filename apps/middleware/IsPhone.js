@@ -7,5 +7,9 @@ module.exports = async (req,res,next) => {
     if(typeof user.phone === 'undefined'){
         return res.sendStatus(403);
     }
+    else if(user.isPhoneActive){
+        return res.sendStatus(403);
+    }
+
     next();
 }

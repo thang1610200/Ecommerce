@@ -69,9 +69,11 @@ UserSchema.methods.SendOtp = async function(){
     const text = "Code: " + Otp;
     await OtpModel.create({
         phone: this.phone,
-        otp: Otp
+        otp: Otp,
+        create_at: new Date()
     })
-    sms.sendSMS(number,text);
+   //sms.sendSMS(number,text);
+   return Otp;
 }
 
 module.exports = mongoose.model('User',UserSchema);

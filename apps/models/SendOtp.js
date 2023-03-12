@@ -6,14 +6,13 @@ const OptSchema = new mongoose.Schema({
     otp: String,
     create_at: {
         type: Date,
-        expires: 300
+        expires: 60
     }
 })
 
 OptSchema.pre('save',function(){
     const salt = bcrypt.genSaltSync(10);
     this.otp = bcrypt.hashSync(this.otp,salt);
-    this.create_at = new Date();
 });
 
 OptSchema.methods.CompareOtp = function(plaintext){

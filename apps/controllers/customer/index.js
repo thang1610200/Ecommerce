@@ -14,6 +14,7 @@ const ChangePassMiddleware = require('../../middleware/ChangePass.js');
 const SetPassValidator = require('../../validator/setpassValidator.js');
 const OtpModel = require('../../models/SendOtp.js');
 const isPhone = require('../../middleware/IsPhone.js');
+const BlockRequest = require('../../middleware/BlockRequest.js');
 
 // Set up multer
 const upload = multer();
@@ -100,20 +101,35 @@ router.get('/otp/:token', isPhone ,async (req,res) => {
         res.sendStatus(403);
     }
     else{
-        await user.SendOtp();
-        res.render('send_otp');
-    }
-})
-    .post('/otp', async (req,res) => {
-        const otp = req.body;
-        const user = await UserModel.findById(req.user.id);
-        const otpmodel = await OtpModel.findOne({email: user.email});
-        if(otpmodel.CompareOtp(otp)){
-            res.json({statusCode: "200"});
+        const otp = await OtpModel.findOne({phone: user.phone});
+        if(!otp){
+            const test = await user.SendOtp();
+            console.log(test);
+            res.render('send_otp');
         }
         else{
-            res.json({statusCode: "403"});
+            res.render('send_otp',{message:"OTP has been sent"});
         }
-    })
+    }
+})
+        .post('/otp',BlockRequest,async (req,res) => {
+            const {otp} = req.body;
+           const user = await UserModel.findById(req.user.id);
+           const otpmodel = await OtpModel.findOne({phone: user.phone});
+            if(otpmodel.CompareOtp(otp)){
+                await UserModel.updateOne({_id:req.user.id},{isPhoneActive: true});
+                await OtpModel.deleteOne({phone: user.phone});
+                res.json({statusCode: 200});
+            }
+            else{
+                res.json({statusCode: 403}); ////// in ra lỗi nếu sai mã otp
+            }
+        })
+        .post("/otp/resend",async (req,res) => {
+            const user = await UserModel.findById(req.user.id);
+            const test = await user.SendOtp();
+            console.log(test);
+            res.json({statusCode: 200});
+        })
 
 module.exports = router;
