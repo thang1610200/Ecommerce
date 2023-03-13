@@ -110,7 +110,7 @@ router.get('/login',(req,res) => {
             if(!errors.isEmpty()){
                res.json({errors});
             } 
-            else{
+            else{        
                res.json({accessToken: req.token});
             }
       })

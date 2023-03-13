@@ -34,7 +34,9 @@ const ttl = (key) => {                      // Thời gian còn lại của key
         })
     })
 }
+
 module.exports = {
+    client,
     incr,
     expire,
     ttl

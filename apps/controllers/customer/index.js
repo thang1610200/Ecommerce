@@ -15,14 +15,18 @@ const SetPassValidator = require('../../validator/setpassValidator.js');
 const OtpModel = require('../../models/SendOtp.js');
 const isPhone = require('../../middleware/IsPhone.js');
 const BlockRequest = require('../../middleware/BlockRequest.js');
+const productService = require('../../service/product.service.js');
 
 // Set up multer
 const upload = multer();
 
 router.use(AuthorUser); /// middleware check login
 
-router.get('/shop',(req,res) => {
-    res.render("shop");
+router.get('/shop',async (req,res) => {
+    let page = !req.query.page || Number(req.query.page) < 1 ? 1 : req.query.page;
+    const product = await productService.paging(page);
+    const countProduct = await productService.count();
+    res.render("shop",{data: product,count: countProduct,page});
 })
 
 router.get('/profile',async (req,res) => {
