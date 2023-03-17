@@ -16,6 +16,7 @@ const OtpModel = require('../../models/SendOtp.js');
 const isPhone = require('../../middleware/IsPhone.js');
 const BlockRequest = require('../../middleware/BlockRequest.js');
 const productService = require('../../service/product.service.js');
+const cartService = require('../../service/cart.service.js');
 
 // Set up multer
 const upload = multer();
@@ -23,11 +24,21 @@ const upload = multer();
 router.use(AuthorUser); /// middleware check login
 
 router.get('/shop',async (req,res) => {
-    let page = !req.query.page || Number(req.query.page) < 1 ? 1 : req.query.page;
-    const product = await productService.paging(page);
     const countProduct = await productService.count();
-    res.render("shop",{data: product,count: countProduct,page});
+    let page = !req.query.page || Number(req.query.page) < 1 ? 1 : req.query.page;
+    page = page > (Math.floor(countProduct / 6) + 1) ? Math.floor(countProduct / 6) + 1: page;
+    const product = await productService.paging(page);
+    const cart = await cartService.getAll(req.user.id);
+    res.render("shop",{data: product,count: countProduct,page,sum_cart:cart});
 })
+    .post('/shop', async (req,res) => {
+       const product = {
+            name: req.body.name,
+            number: 1
+       }
+       const cart = await cartService.addcart(req.user.id,product);
+        res.json({cart});
+    })
 
 router.get('/profile',async (req,res) => {
     const user = await UserModel.findById(req.user.id);
@@ -136,4 +147,19 @@ router.get('/otp/:token', isPhone ,async (req,res) => {
             res.json({statusCode: 200});
         })
 
+
+router.get('/cart',async (req,res) => {
+    const cart = await cartService.getAllproductByCart(req.user.id);
+    res.render('cart',{data: cart});
+})
+    .post('/cart', async (req,res) => {
+        const {number, name} = req.body;
+      await cartService.updateNumberProduct(req.user.id,name,number);
+      const cart = await cartService.getAllproductByCart(req.user.id);
+        res.json({cart});
+    })
+
+router.get('/checkout', (req,res) => {
+    res.render("checkout");
+})
 module.exports = router;

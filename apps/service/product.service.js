@@ -7,5 +7,8 @@ module.exports = {
     },
     count: async () => {
         return await ProductModel.count();
+    },
+    findbyId: async (name) => {
+        return await ProductModel.findOne({name});
     }
 }
