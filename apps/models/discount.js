@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const brcypt = require('bcryptjs');
 
 const DiscountSchema = new mongoose.Schema({
     name: String,
@@ -7,7 +6,7 @@ const DiscountSchema = new mongoose.Schema({
     active: {type: Boolean, default: false},
     discount: {type: Number, default: 0},
     quantity: {type: Number, default: 0},
-    expired: {type: Number},
+    user: {type: Array, default: []}
 },{
     timestamps: true
 });

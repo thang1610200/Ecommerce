@@ -1,7 +1,10 @@
 const express = require("express");
 const productModel = require('../../models/product.js');
+const userModel = require('../../models/User.js');
 const multer = require('multer');
 const drive = require('../../utils/drive.js');
+const discountService = require('../../service/discount.service.js');
+const {sendDiscount} = require('../../utils/mail.js');
 
 const upload = multer();
 
@@ -26,7 +29,17 @@ router.get('/product',async (req,res) => {
         res.redirect("/admin/product");
     })
 
-router.get("/discount",(req,res) => {
-    res.render("discount");
-});
+router.get("/discount",async (req,res) => {
+    const discount = await discountService.findAll();
+    res.render("discount",{message: req.flash("discount_add"),data: discount});
+})
+    .post("/discount", async (req,res) => {
+        const {name, code, active, discount, quantity} = req.body;
+        await discountService.createDiscount(name,code,active,discount,quantity);
+        const discount_code = await discountService.findAll();
+        const email = await userModel.find();
+        sendDiscount(email,discount_code);
+        req.flash("discount_add","Create successful discount");
+        res.redirect("/admin/discount");
+    })
 module.exports = router;

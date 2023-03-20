@@ -36,7 +36,7 @@
               <div class="flex flex-col justify-between ml-4 flex-grow">
                 <span class="font-bold text-sm"><%= datas.products.name%></span>
                 <span class="text-red-500 text-xs"><%= datas.products.brand%></span>
-                <a href="#" class="font-semibold hover:text-red-500 text-gray-500 text-xs">Remove</a>
+                <a product_name="<%= datas.products.name%>" class="remove_product font-semibold hover:text-red-500 text-gray-500 text-xs">Remove</a>
               </div>
             </div>
             <div class="flex justify-center w-1/5">
@@ -64,10 +64,6 @@
   
         <div id="summary" class="w-1/4 px-8 py-10">
           <h1 class="font-semibold text-2xl border-b pb-8">Order Summary</h1>
-          <div class="flex justify-between mt-10 mb-5">
-            <span class="font-semibold text-sm uppercase">Items 3</span>
-            <span class="font-semibold text-sm">590$</span>
-          </div>
           <div>
             <label class="font-medium inline-block mb-3 text-sm uppercase">Shipping</label>
             <select class="block p-2 text-gray-600 w-full text-sm">
@@ -77,14 +73,16 @@
           <div class="py-10">
             <label for="promo" class="font-semibold inline-block mb-3 text-sm uppercase">Promo Code</label>
             <input type="text" id="promo" placeholder="Enter your code" class="p-2 text-sm w-full">
+            <div id="message_promo"></div>
           </div>
-          <button class="bg-red-500 hover:bg-red-600 px-5 py-2 text-sm text-white uppercase">Apply</button>
+          <button id="apply_discount" class="bg-red-500 hover:bg-red-600 px-5 py-2 text-sm text-white uppercase">Apply</button>
           <div class="border-t mt-8">
-            <div class="flex font-semibold justify-between py-6 text-sm uppercase">
+            <div id="total" class="flex font-semibold justify-between py-6 text-sm uppercase">
               <span>Total cost</span>
-              <span>$600</span>
+              <%var sum = 0; data.forEach(function(cart){sum = sum + (Number(cart.products.price) * Number(cart.number)) })%>
+              <span>$ <%= sum%></span>
             </div>
-            <button class="bg-indigo-500 font-semibold hover:bg-indigo-600 py-3 text-sm text-white uppercase w-full">Checkout</button>
+            <button id="checkout" class="bg-indigo-500 font-semibold hover:bg-indigo-600 py-3 text-sm text-white uppercase w-full">Checkout</button>
           </div>
         </div>
       </div>
@@ -92,9 +90,54 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-      $(document).ready(function(){
-        $(".product_number").change(function(){
-          console.log($(this).val());
+      $(document).on('click',".remove_product",function(){
+            $.ajax({
+              url: "/customer/rmproduct",
+              type: "post",
+              data: {name: $(this).attr("product_name")},
+              dataType: 'json',
+              success: function(data){
+                $("#product_load").empty();
+                    data.cart.forEach(function(data){
+                    $("#product_load").append("<div class='flex items-center hover:bg-gray-100 -mx-8 px-6 py-5'>"
+                                                 +"<div class='flex w-2/5'>"
+                                                   + "<div class='w-20'>"
+                                       + "<img class='h-24' src='https://drive.google.com/uc?id="+data.products.img+"'>"
+                                           +"</div>"
+                                        +"<div class='flex flex-col justify-between ml-4 flex-grow'>"
+                                            +"<span class='font-bold text-sm'>"+ data.products.name+"</span>"
+                                      +"<span class='text-red-500 text-xs'>"+ data.products.brand+"</span>"
+                                        +"<a product_name='"+data.products.name+"' class='remove_product font-semibold hover:text-red-500 text-gray-500 text-xs'>Remove</a>"
+                                            +"</div>"
+                                              + "</div>"
+                                     + "<div class='flex justify-center w-1/5'>"
+                                        +"<svg class='fill-current text-gray-600 w-3' viewBox='0 0 448 512'><path d='M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z'/>"
+                                        +"</svg>"
+                                      + "<input product_name='"+data.products.name+"' class='product_number mx-2 border text-center w-10' type='text' value='"+ data.number+"'>"
+                                        +"<svg class='fill-current text-gray-600 w-3' viewBox='0 0 448 512'>"
+                                          +"<path d='M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z'/>"
+                                        +"</svg>"
+                                      +"</div>"
+                                    + "<span class='text-center w-1/5 font-semibold text-sm'>$"+ data.products.price +"</span>"
+                                    + "<span class='text-center w-1/5 font-semibold text-sm'>$"+ Number(data.products.price) * Number(data.number)+"</span>"
+                                    +"</div>");
+                            })
+                            var sum = 0; 
+                            data.cart.forEach(function(cart){
+                              sum = sum + (Number(cart.products.price) * Number(cart.number)) 
+                            });
+                          $("#total").empty();
+                          $("#total").append("<span class='font-semibold text-sm uppercase'>Total Payment</span>"
+                            +"<span class='font-semibold text-sm'>$"+ sum +"</span>")
+              }
+            })
+      })
+
+      $(document).on('click','#checkout',function(){
+          location.href = "/customer/checkout";
+      })
+
+        $(document).on('change','.product_number',function(){       // thực hiện được sau khi append
               $.ajax({
                 url: "/customer/cart",
                 type: "post",
@@ -111,7 +154,7 @@
                                         +"<div class='flex flex-col justify-between ml-4 flex-grow'>"
                                             +"<span class='font-bold text-sm'>"+ data.products.name+"</span>"
                                       +"<span class='text-red-500 text-xs'>"+ data.products.brand+"</span>"
-                                        +"<a href='#' class='font-semibold hover:text-red-500 text-gray-500 text-xs'>Remove</a>"
+                                        +"<a product_name='"+data.products.name+"' class='remove_product font-semibold hover:text-red-500 text-gray-500 text-xs'>Remove</a>"
                                             +"</div>"
                                               + "</div>"
                                      + "<div class='flex justify-center w-1/5'>"
@@ -126,10 +169,45 @@
                                     + "<span class='text-center w-1/5 font-semibold text-sm'>$"+ Number(data.products.price) * Number(data.number)+"</span>"
                                     +"</div>");
                             })
+                            var sum = 0; 
+                            data.cart.forEach(function(cart){
+                              sum = sum + (Number(cart.products.price) * Number(cart.number)) 
+                            });
+                          $("#total").empty();
+                          $("#total").append("<span class='font-semibold text-sm uppercase'>Total Payment</span>"
+                            +"<span class='font-semibold text-sm'>$"+ sum +"</span>")
                 }
               })
         })
-      })
+
+
+        $(document).on("click","#apply_discount",function(){
+            $.ajax({
+              url: "/customer/discount",
+              type: "post",
+              data: {code: $("#promo").val()},
+              dataType: 'json',
+              success: function(data){
+                $("#message_promo").empty();
+                  if(data.statusCode === 400){
+                    $("#message_promo").append("<span class='text-sm text-red-600'> Promo code does not exist. </span>");
+                  }
+                  else if(data.statusCode === 201){
+                    $("#message_promo").append("<span class='text-sm text-red-600'> Promo code has expired. </span>");
+                  }
+                  else if(data.statusCode === 200){
+                    var sum = 0; 
+                    data.carts.forEach(function(cart){
+                      sum = sum + (Number(cart.products.price) * Number(cart.number)) 
+                    });
+                    sum = (sum * data.discount.discount) / 100;
+                    $("#total").empty();
+                    $("#total").append("<span class='font-semibold text-sm uppercase'>Total Payment</span>"
+                            +"<span class='font-semibold text-sm'>$"+ sum +"</span>")
+                  }
+              }
+            })
+        })
     </script>
   </body>
 </html>

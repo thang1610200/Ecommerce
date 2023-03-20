@@ -5,7 +5,7 @@ require('dotenv').config();
 const fs = require('fs');
 const random = require("randomstring");
 const ResetPassModel = require('../models/ResetPassword.js');
-const sendMail = require("../utils/mail.js");
+const {sendMail} = require("../utils/mail.js");
 const OtpModel = require('./SendOtp.js');
 const generateOtp = require('otp-generator');
 const sms = require('../utils/sms.js');

@@ -34,5 +34,9 @@ module.exports = {
     },
     updateNumberProduct: async (userId,productName, productNumber) => {
         return await cartModel.findOneAndUpdate({userId,"products.name":productName},{$set: {"products.$.number":productNumber}});
-    }
+    },
+    // Xóa 1 sản phẩm khỏi cart
+   removeProduct: async (userId,name) => {
+        return cartModel.findOneAndUpdate({userId},{$pull: {products: {name}}},{new: true});
+   } 
 }

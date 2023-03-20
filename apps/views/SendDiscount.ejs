@@ -1,0 +1,8 @@
+<h1>Các mã giảm giá</h1>
+
+<% data.forEach(function(discount){ %>
+    <% if(discount.active){ %>
+<h2><%= discount.name%>          <%= discount.code%></h2>
+        <%}%>
+<br>
+<%})%>

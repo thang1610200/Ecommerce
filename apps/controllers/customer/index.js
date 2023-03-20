@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const AuthorUser = require('../../middleware/AuthorUser.js');
 const UserModel = require('../../models/User.js');
-const SendMail = require('../../utils/mail.js');
+const {sendMail} = require('../../utils/mail.js');
 const CheckParam = require('../../middleware/CheckParam.js');
 const multer = require('multer');
 const Drive = require('../../utils/drive.js');
@@ -17,6 +17,7 @@ const isPhone = require('../../middleware/IsPhone.js');
 const BlockRequest = require('../../middleware/BlockRequest.js');
 const productService = require('../../service/product.service.js');
 const cartService = require('../../service/cart.service.js');
+const discountService = require('../../service/discount.service.js');
 
 // Set up multer
 const upload = multer();
@@ -61,7 +62,7 @@ router.get('/email',async (req,res) => {
     const user = await UserModel.findById(req.user.id);
     if(!user.isEmailActive){
         const url = `http://localhost:3001/customer/email/verify/${user.email_code}`;
-         SendMail(user.email,url);
+         sendMail(user.email,url);
          res.render("checkmail",{data: user});
     }
     else{
@@ -158,8 +159,37 @@ router.get('/cart',async (req,res) => {
       const cart = await cartService.getAllproductByCart(req.user.id);
         res.json({cart});
     })
+    .post('/discount', async (req,res) => {
+        const {code} = req.body;
+        const discount = await discountService.findByCode(code);
+        const user = await UserModel.findOne({_id: req.user.id});
+        const carts = await cartService.getAllproductByCart(req.user.id);
+        if(!discount){
+            res.json({statusCode: 400}); // Nếu mã code không tồn tại
+        }
+        else{
+            if(discount.quantity <= 0 || discount.user.includes(user.email) || !discount.active){
+                res.json({statusCode: 201});  // nếu số lượng disount không còn or user đã sài discount này r thì sẽ thông báo
+            }
+            else{
+                res.json({statusCode: 200,discount,carts});
+            } 
+        }
+    })
+    .post('/rmproduct',async (req,res) => {
+        const {name} = req.body;
+        await cartService.removeProduct(req.user.id,name);
+        const cart = await cartService.getAllproductByCart(req.user.id);
+        res.json({cart});
+    })
 
-router.get('/checkout', (req,res) => {
-    res.render("checkout");
+
+router.get('/checkout', async (req,res) => {
+    const carts = await cartService.getAllproductByCart(req.user.id);
+    res.render("checkout",{cart: carts});
+})
+
+router.get('/payment', async (req,res) => {
+    res.render("payment");
 })
 module.exports = router;

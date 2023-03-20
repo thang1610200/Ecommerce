@@ -43,4 +43,43 @@ const sendMail = async (receiver,url) => {
     }
 }
 
-module.exports = sendMail;
+const sendDiscount = async (receiver, code) => {
+    try{
+        const accessToken = await oAuth2Client.getAccessToken();
+        const transport = mail.createTransport({
+            service: 'gmail',
+            auth: {
+                type: 'OAuth2',
+                user: 'nguyenhuuthangc7@gmail.com',
+                clientId: CLIENT_ID,
+                clientSecret: CLIENT_SECRET,
+                refreshToken: REFESH_TOKEN,
+                accessToken: accessToken
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        })
+
+        const data = await ejs.renderFile('./apps/views/SendDiscount.ejs',{data:code});
+        var receivers = [];
+        receiver.forEach(function(data){
+            receivers.push(data.email);
+        })
+
+        let infor = await transport.sendMail({
+            from: '"Discounts" <nguyenhuuthangc7@gmail.com>',
+            to: receivers,
+            subject: "Discounts",
+            html: data
+        })
+    }
+    catch(err){
+        console.log(err);
+    }
+}
+
+module.exports = {
+    sendMail,
+    sendDiscount
+};
