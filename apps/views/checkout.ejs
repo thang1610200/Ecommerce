@@ -22,7 +22,7 @@
   
           <div>
             <p class="text-2xl font-medium tracking-tight text-gray-900">
-              $99.99
+              $<% if(typeof data !== "underfined"){%><%= data.amount_paid%><%} else{ %><%= 0%><%}%>
             </p>
   
             <p class="mt-1 text-sm text-gray-600">For the purchase of</p>
@@ -64,7 +64,7 @@
   
       <div class="bg-white py-12 md:py-24">
         <div class="mx-auto max-w-lg px-4 lg:px-8">
-          <form class="grid grid-cols-6 gap-4">
+          <form class="grid grid-cols-6 gap-4" action="/customer/checkout" method="post">
             <div class="col-span-3">
               <label
                 for="FirstName"
@@ -77,6 +77,8 @@
                 type="text"
                 id="FirstName"
                 class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+                value="<%= user.fullname%>"
+                disabled
               />
             </div>
   
@@ -104,6 +106,8 @@
                 type="email"
                 id="Email"
                 class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+                value="<%= user.email%>"
+                disabled
               />
             </div>
   
@@ -116,6 +120,8 @@
                 type="tel"
                 id="Phone"
                 class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+                value="<%= user.phone%>"
+                disabled
               />
             </div>
   
@@ -126,55 +132,16 @@
   
               <input
                 type="text"
+                name="address"
                 id="address"
                 class="mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
               />
+              <div id="error_notice"></div>
+            
             </div>
-
-            <fieldset class="col-span-6">
-              <legend class="block text-sm font-medium text-gray-700">
-                Card Details
-              </legend>
-  
-              <div class="mt-1 -space-y-px rounded-md bg-white shadow-sm">
-                <div>
-                  <label for="CardNumber" class="sr-only"> Card Number </label>
-  
-                  <input
-                    type="text"
-                    id="CardNumber"
-                    placeholder="Card Number"
-                    class="relative mt-1 w-full rounded-t-md border-gray-200 focus:z-10 sm:text-sm"
-                  />
-                </div>
-  
-                <div class="flex -space-x-px">
-                  <div class="flex-1">
-                    <label for="CardExpiry" class="sr-only"> Card Expiry </label>
-  
-                    <input
-                      type="text"
-                      id="CardExpiry"
-                      placeholder="Expiry Date"
-                      class="relative w-full rounded-bl-md border-gray-200 focus:z-10 sm:text-sm"
-                    />
-                  </div>
-  
-                  <div class="flex-1">
-                    <label for="CardCVC" class="sr-only"> Card CVC </label>
-  
-                    <input
-                      type="text"
-                      id="CardCVC"
-                      placeholder="CVC"
-                      class="relative w-full rounded-br-md border-gray-200 focus:z-10 sm:text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            </fieldset>
             <div class="col-span-6">
-              <button
+              <button type="button"
+                id="pay_click"
                 class="block w-full rounded-md bg-black p-2.5 text-sm text-white transition hover:shadow-lg"
               >
                 Pay Now
@@ -185,5 +152,26 @@
       </div>
     </div>
   </section>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+      $("#pay_click").click(function(){
+          $.ajax({
+            url: "/customer/checkout",
+            type:"post",
+            data: {address: $("#address").val()},
+            dataType: "json",
+            success: function(data){
+                if(data.statusCode === 201){
+                  console.log(data);
+                $("#error_notice").empty();
+                $("#error_notice").append("<span class='text-sm text-red-600'>"+ data.errors.errors[0].msg +"</span>");
+                }
+                else if(data.statusCode === 200){
+                  location.href = "/customer/payment";
+                }
+            }
+          })
+      })
+  </script>
 </body>
 </html>

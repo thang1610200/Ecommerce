@@ -134,7 +134,23 @@
       })
 
       $(document).on('click','#checkout',function(){
-          location.href = "/customer/checkout";
+          $.ajax({
+            url: "/customer/cart/checkout",
+            type: "post",
+            data: {code: $("#promo").val()},
+            dataType: "json",
+            success: function(data){
+              if(data.statusCode === 400){
+                    $("#message_promo").append("<span class='text-sm text-red-600'> Promo code does not exist. </span>");
+                  }
+              else if(data.statusCode === 201){
+                    $("#message_promo").append("<span class='text-sm text-red-600'> Promo code has expired. </span>");
+                  }
+              else if(data.statusCode === 200){
+                location.href = "/customer/checkout";
+              }
+            }
+          })
       })
 
         $(document).on('change','.product_number',function(){       // thực hiện được sau khi append

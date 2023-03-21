@@ -3,7 +3,7 @@ const productModel = require('../models/product.js');
 
 module.exports = {
     addcart: async (userId,products) => {
-        const cart = await cartModel.findOne({userId});
+        const cart = await cartModel.findOne({userId,status: "Active"});
         if(!cart){ /// Nếu User chưa đặt hàng thì sẽ thêm vào database
             return await cartModel.findOneAndUpdate({userId},{$set: {"products":products}},{new:true,upsert:true});
         }
@@ -19,10 +19,10 @@ module.exports = {
         return await cartModel.findById(id); 
     },
     getAll: async (userId) => {
-       return await cartModel.findOne({userId});
+       return await cartModel.findOne({userId,status: "Active"});
     },
     getAllproductByCart: async(userId) => {                                  
-       const cart =  await cartModel.findOne({userId});
+       const cart =  await cartModel.findOne({userId, status: "Active"});
        var array = [];
        if(cart){
             for(let i = 0; i < cart.products.length; i++){
@@ -32,11 +32,12 @@ module.exports = {
        }
        return array;
     },
+    // Thêm số lượng của sản phẩm
     updateNumberProduct: async (userId,productName, productNumber) => {
-        return await cartModel.findOneAndUpdate({userId,"products.name":productName},{$set: {"products.$.number":productNumber}});
+        return await cartModel.findOneAndUpdate({userId,"products.name":productName, status:"Active"},{$set: {"products.$.number":productNumber}});
     },
     // Xóa 1 sản phẩm khỏi cart
    removeProduct: async (userId,name) => {
-        return cartModel.findOneAndUpdate({userId},{$pull: {products: {name}}},{new: true});
+        return cartModel.findOneAndUpdate({userId,status:"Active"},{$pull: {products: {name}}},{new: true});
    } 
 }

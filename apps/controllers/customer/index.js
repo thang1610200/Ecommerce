@@ -18,6 +18,9 @@ const BlockRequest = require('../../middleware/BlockRequest.js');
 const productService = require('../../service/product.service.js');
 const cartService = require('../../service/cart.service.js');
 const discountService = require('../../service/discount.service.js');
+const orderService = require('../../service/order.service.js');
+const CheckoutMiddleware = require('../../middleware/Checkout.js');
+const CheckoutValidator = require('../../validator/checkoutValidator.js');
 
 // Set up multer
 const upload = multer();
@@ -182,12 +185,57 @@ router.get('/cart',async (req,res) => {
         const cart = await cartService.getAllproductByCart(req.user.id);
         res.json({cart});
     })
+    .post('/cart/checkout', async (req,res) => {
+        const {code} = req.body;
+        const user = await UserModel.findOne({_id: req.user.id});
+        const carts = await cartService.getAllproductByCart(req.user.id);
 
+        var sum = 0; 
+        carts.forEach(function(cart){
+          sum = sum + (Number(cart.products.price) * Number(cart.number)) 
+        });
 
-router.get('/checkout', async (req,res) => {
+        if(code.length === 0){
+            const cart = await cartService.getAll(req.user.id);
+            await orderService.order_update(cart._id,req.user.id,sum);
+            return res.json({statusCode: 200});
+        }
+        const discount = await discountService.findByCode(code);
+        if(!discount){
+            res.json({statusCode: 400}); // Nếu mã code không tồn tại
+        }
+        else{
+            if(discount.quantity <= 0 || discount.user.includes(user.email) || !discount.active){
+                res.json({statusCode: 201});  // nếu số lượng disount không còn or user đã sài discount này r thì sẽ thông báo
+            }
+            else{
+                sum = (sum * discount.discount) / 100;
+                const cart = await cartService.getAll(req.user.id);
+                await orderService.order_update(cart._id,req.user.id,sum);
+                res.json({statusCode: 200});
+            } 
+        }
+    })
+
+router.get('/checkout',CheckoutMiddleware,async (req,res) => {
     const carts = await cartService.getAllproductByCart(req.user.id);
-    res.render("checkout",{cart: carts});
+    const cart = await cartService.getAll(req.user.id);
+    const order = await orderService.getAll(cart._id,req.user.id);
+    const users = await UserModel.findById(req.user.id);
+    res.render("checkout",{cart: carts,data: order, user: users});
 })
+    .post('/checkout',CheckoutValidator ,async (req,res) => {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            res.json({statusCode: 201,errors});
+        }
+        else{
+            const {address} = req.body;
+            const cart = await cartService.getAll(req.user.id);
+            await orderService.order_update_infor(cart._id, req.user.id,address);
+            res.json({statusCode: 200});
+        }
+    })
 
 router.get('/payment', async (req,res) => {
     res.render("payment");
