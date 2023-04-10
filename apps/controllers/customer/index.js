@@ -21,6 +21,10 @@ const discountService = require('../../service/discount.service.js');
 const orderService = require('../../service/order.service.js');
 const CheckoutMiddleware = require('../../middleware/Checkout.js');
 const CheckoutValidator = require('../../validator/checkoutValidator.js');
+const vnpayApi = require('../../utils/vnpay');
+const configVNP = require("../../config/vnpay.config");
+const zalopayApi = require('../../utils/zalopay');
+//const PaymentMiddleware = require('../../middleware/Payment');
 
 // Set up multer
 const upload = multer();
@@ -197,6 +201,9 @@ router.get('/cart',async (req,res) => {
 
         if(code.length === 0){
             const cart = await cartService.getAll(req.user.id);
+            if(!cart){
+                return res.json({statusCode: 503});
+            }
             await orderService.order_update(cart._id,req.user.id,sum);
             return res.json({statusCode: 200});
         }
@@ -232,12 +239,40 @@ router.get('/checkout',CheckoutMiddleware,async (req,res) => {
         else{
             const {address} = req.body;
             const cart = await cartService.getAll(req.user.id);
-            await orderService.order_update_infor(cart._id, req.user.id,address);
-            res.json({statusCode: 200});
+            const order = await orderService.order_update_infor(cart._id, req.user.id,address);
+            //----------------------------------------
+            //vnpayApi.checkout(req,res,order);
+            zalopayApi.createOrder(order);
+            //console.log(test);
         }
     })
 
-router.get('/payment', async (req,res) => {
-    res.render("payment");
-})
+router.get('/vnpay_return', async (req, res) => {
+    let vnp_Params = req.query;
+    let secureHash = vnp_Params['vnp_SecureHash'];
+    
+    delete vnp_Params['vnp_SecureHash'];
+    delete vnp_Params['vnp_SecureHashType'];
+
+    vnp_Params = vnpayApi.sortObject(vnp_Params);
+
+    let tmnCode = configVNP.vnp_TmnCode
+    let secretKey = configVNP.vnp_HashSecret;
+
+    let querystring = require('qs');
+    let signData = querystring.stringify(vnp_Params, { encode: false });
+    let crypto = require("crypto");     
+    let hmac = crypto.createHmac("sha512", secretKey);
+    let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");     
+
+    if(secureHash === signed){
+        if(vnp_Params['vnp_ResponseCode'] === '00'){
+            const cart = await cartService.updateStatusCart(req.user.id);
+            await orderService.update_status(cart._id, req.user.id);
+        }
+        res.render('payment_success', {code: vnp_Params['vnp_ResponseCode']})
+    } else{
+        res.render('payment_success', {code: '97'})
+    }
+});
 module.exports = router;

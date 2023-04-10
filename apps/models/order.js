@@ -6,7 +6,7 @@ const OrderSchema = new mongoose.Schema({
     shipping: String,
     payments: Object,
     address: String,
-    status: {type: String, default: "Not precessed"}, // Trạng thái đơn hàng
+    status: {type: String, default: "Not processed"}, // Trạng thái đơn hàng
     amount_paid: {type: Number, default: 0},
     isAmount: {type: Boolean, default: false},
     isPayBefore: {type: Boolean, default: false}

@@ -8,6 +8,7 @@ const session = require("express-session");
 const passport = require('passport');
 const flash = require('connect-flash');
 const compression = require('compression');
+const logevent = require(__dirname + '/apps/utils/logEvent.js');
 
 const app = express();
 
@@ -38,6 +39,20 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(router);
+app.use((req,res,next) => {
+    res.status(404);
+    res.json({
+        message: "cc"
+    })
+})
+
+app.use((err,req,res,next) => {
+    logevent(`${req.url}====${req.method}====${err}`);
+    res.status(err.status || 500);
+    res.json({
+        message: "cddddd"
+    })
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,() => {

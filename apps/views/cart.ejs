@@ -16,6 +16,7 @@
     <div class="container mx-auto mt-10">
       <div class="flex shadow-md my-10">
         <div class="w-3/4 bg-white px-10 py-10">
+          <div id="message_add"></div>
           <div class="flex justify-between border-b pb-8">
             <h1 class="font-semibold text-2xl">Shopping Cart</h1>
             <h2 class="font-semibold text-2xl"><%= data.length%> Items</h2>
@@ -149,6 +150,19 @@
               else if(data.statusCode === 200){
                 location.href = "/customer/checkout";
               }
+              else if(data.statusCode === 503){
+                    $("#message_add").append("<div class='text-white px-6 py-4 border-0 rounded relative mb-4 bg-pink-500'>"
+                        +"<span class='text-xl inline-block mr-5 align-middle'>"
+                          +"<i class='fas fa-bell'></i>"
+                        +"</span>"
+                        +"<span class='inline-block align-middle mr-8'>"
+                            + "Please select 1 product"
+                        +"</span>"
+                        +"<button class='absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none' onclick='closeAlert(event)'>"
+                          +"<span>×</span>"
+                       +"</button>"
+                      +"</div>");
+                  }
             }
           })
       })
@@ -224,6 +238,14 @@
               }
             })
         })
+
+        function closeAlert(event){
+          let element = event.target;
+          while(element.nodeName !== "BUTTON"){
+            element = element.parentNode;
+          }
+          element.parentNode.parentNode.removeChild(element.parentNode);
+        }
     </script>
   </body>
 </html>

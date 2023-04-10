@@ -5,7 +5,8 @@ module.exports = {
     addcart: async (userId,products) => {
         const cart = await cartModel.findOne({userId,status: "Active"});
         if(!cart){ /// Nếu User chưa đặt hàng thì sẽ thêm vào database
-            return await cartModel.findOneAndUpdate({userId},{$set: {"products":products}},{new:true,upsert:true});
+            //return await cartModel.findOneAndUpdate({userId},{$set: {"products":products}},{new:true,upsert:true});
+            return await cartModel.create({userId,products});
         }
         else{ 
             const isProduct =  await cartModel.findOne({"products.name":products.name}); // Kiểm tra product có trong giỏ hay chưa, nếu có r thì tăng số lượng không thì push vào field products
@@ -39,5 +40,8 @@ module.exports = {
     // Xóa 1 sản phẩm khỏi cart
    removeProduct: async (userId,name) => {
         return cartModel.findOneAndUpdate({userId,status:"Active"},{$pull: {products: {name}}},{new: true});
-   } 
+   },
+   updateStatusCart: async (userId) => {
+        return cartModel.findOneAndUpdate({userId,status:"Active"},{$set: {status: "Unactive"}},{new: true});
+   }
 }
